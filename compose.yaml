@@ -1,0 +1,41 @@
+# Local PostgreSQL integration environment, NOT a complete production deployment.
+x-jade-env: &jade-env
+  JADE_REGISTRY_SECRET_KEY: ${JADE_REGISTRY_SECRET_KEY:?Set a random application secret in .env}
+  JADE_REGISTRY_DATABASE_URL: postgresql+psycopg://jade:${POSTGRES_PASSWORD:?Set a random URL-safe database password in .env}@db:5432/jade
+  JADE_REGISTRY_ENV: development
+  JADE_REGISTRY_ORIGIN: http://127.0.0.1:8000
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: jade
+      POSTGRES_USER: jade
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a random database password in .env}
+    volumes:
+      - jade-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jade -d jade"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  migrate:
+    build: .
+    environment: *jade-env
+    command: ["python", "-m", "app.manage", "migrate"]
+    depends_on:
+      db:
+        condition: service_healthy
+  web:
+    build: .
+    environment: *jade-env
+    ports: ["127.0.0.1:8000:8000"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+volumes:
+  jade-data:

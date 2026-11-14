@@ -1,0 +1,3 @@
+-r requirements.txt
+# PostgreSQL runtime is configured but was not executed in the build environment.
+psycopg[binary]==3.3.4

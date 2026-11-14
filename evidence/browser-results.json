@@ -1,0 +1,8 @@
+{
+  "status": "blocked_not_verified",
+  "attempt": "Chromium launched through Playwright against the local application",
+  "reason": "Navigation to the local application was denied with net::ERR_BLOCKED_BY_ADMINISTRATOR.",
+  "functional_browser_checks_passed": 0,
+  "visual_review_completed": false,
+  "note": "No browser policy bypass was attempted. API and migration tests are separate evidence."
+}
